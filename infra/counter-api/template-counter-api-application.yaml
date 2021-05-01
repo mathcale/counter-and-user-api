@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Stack responsável pela API de contagem de acessos ao site do Ton
+
+Parameters:
+  AliasName:
+    Type: String
+    Default: dev
+  CounterApiGatewayKeyValue:
+    Type: String
+    Default: 7U?7KkTxey+T32EJEdhjhH6FK?@n%Tr!
+  LogRetentionDays:
+    Type: Number
+    Default: 7
+  CountApiKey:
+    Type: String
+    Default: f715eedc-dc9a-4938-a457-10c75af52b81
+  CountApiNamespace:
+    Type: String
+    Default: ton.com.br
+
+Globals:
+  Function:
+    Environment:
+      Variables:
+        COUNTAPI_URL: https://api.countapi.xyz
+        COUNTAPI_KEY: !Ref CountApiKey
+        COUNTAPI_NAMESPACE: !Ref CountApiNamespace
+
+Resources:
+  #region Functions
+  CounterApiShowIncrementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-increment'
+      Description: Conta o número de acessos ao site do Ton através da CountAPI
+      CodeUri: ../../packages/counter-api/increment-fn
+      Handler: index.handler
+      Timeout: 30
+      MemorySize: 128
+      Runtime: nodejs14.x
+      AutoPublishAlias: !Ref AliasName
+      Tracing: Active
+      ReservedConcurrentExecutions: 1
+
+      Policies:
+        - AWSLambdaBasicExecutionRole
+  #endregion Functions
+
+  #region Log Groups
+  CounterApiShowIncrementFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: !Ref LogRetentionDays
+      LogGroupName: !Join ['', ['/aws/lambda/', !Ref CounterApiShowIncrementFunction]]
+  #endregion Log Groups
+
+  #region Lambda Invoke Permissions
+  CounterApiShowIncrementFunctionApiGatewayInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CounterApiShowIncrementFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CounterApi}/*'
+  #endregion Lambda Invoke Permissions
+
+  #region API Gateway
+  CounterApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub '${AWS::StackName}-counter-api'
+      StageName: !Ref AliasName
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
+
+      DefinitionBody:
+        swagger: 2.0
+        info:
+          title: !Sub '${AWS::StackName}'
+        schemes:
+          - https
+        x-amazon-apigateway-api-key-source: HEADER
+
+        x-amazon-apigateway-policy:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: 'Allow'
+              Principal: '*'
+              Action: 'execute-api:Invoke'
+              Resource: 'execute-api:/*'
+
+        securityDefinitions:
+          api_key:
+            type: 'apiKey'
+            name: 'x-api-key'
+            in: 'header'
+
+        paths:
+          /count:
+            post:
+              summary: Conta o número de acessos ao site do Ton através da CountAPI
+              responses: {}
+              security:
+                - api_key: []
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CounterApiShowIncrementFunction.Arn}/invocations'
+                passthroughBehavior: 'when_no_match'
+
+  CounterApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    DependsOn:
+      - CounterApiStage
+    Properties:
+      Name: !Sub "${AWS::StackName}"
+      Description: !Sub "Chave de acesso à API ${AWS::StackName}"
+      Enabled: true
+      GenerateDistinctId: false
+      StageKeys:
+        - RestApiId: !Ref CounterApi
+          StageName: !Sub "${AliasName}"
+      Value: !Ref CounterApiGatewayKeyValue
+
+  CounterApiUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    DependsOn:
+      - CounterApiStage
+    Properties:
+      Description: !Sub "Usage plan para a API ${AWS::StackName}"
+      UsagePlanName: !Sub "${AWS::StackName}-usage-plan"
+      ApiStages:
+        - ApiId: !Ref CounterApi
+          Stage: !Sub "${AliasName}"
+
+  CounterApiUsagePlanKeyAssociation:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref CounterApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref CounterApiUsagePlan
+  #endregion API Gateway
