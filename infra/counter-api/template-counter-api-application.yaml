@@ -29,6 +29,23 @@ Globals:
 
 Resources:
   #region Functions
+  CounterApiShowFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-show'
+      Description: Busca o número de acessos ao site do Ton através da CountAPI
+      CodeUri: ../../packages/counter-api/show-fn
+      Handler: index.handler
+      Timeout: 30
+      MemorySize: 128
+      Runtime: nodejs14.x
+      AutoPublishAlias: !Ref AliasName
+      Tracing: Active
+      ReservedConcurrentExecutions: 1
+
+      Policies:
+        - AWSLambdaBasicExecutionRole
+
   CounterApiIncrementFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -48,6 +65,12 @@ Resources:
   #endregion Functions
 
   #region Log Groups
+  CounterApiShowFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: !Ref LogRetentionDays
+      LogGroupName: !Join ['', ['/aws/lambda/', !Ref CounterApiShowFunction]]
+
   CounterApiIncrementFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -56,6 +79,14 @@ Resources:
   #endregion Log Groups
 
   #region Lambda Invoke Permissions
+  CounterApiShowFunctionApiGatewayInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt CounterApiShowFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CounterApi}/*'
+
   CounterApiIncrementFunctionApiGatewayInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -98,6 +129,17 @@ Resources:
 
         paths:
           /count:
+            get:
+              summary: Busca o número de acessos ao site do Ton através da CountAPI
+              responses: {}
+              security:
+                - api_key: []
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CounterApiShowFunction.Arn}/invocations'
+                passthroughBehavior: 'when_no_match'
+
             post:
               summary: Conta o número de acessos ao site do Ton através da CountAPI
               responses: {}
