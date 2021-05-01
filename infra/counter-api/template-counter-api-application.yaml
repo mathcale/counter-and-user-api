@@ -29,7 +29,7 @@ Globals:
 
 Resources:
   #region Functions
-  CounterApiShowIncrementFunction:
+  CounterApiIncrementFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub '${AWS::StackName}-increment'
@@ -48,19 +48,19 @@ Resources:
   #endregion Functions
 
   #region Log Groups
-  CounterApiShowIncrementFunctionLogGroup:
+  CounterApiIncrementFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: !Ref LogRetentionDays
-      LogGroupName: !Join ['', ['/aws/lambda/', !Ref CounterApiShowIncrementFunction]]
+      LogGroupName: !Join ['', ['/aws/lambda/', !Ref CounterApiIncrementFunction]]
   #endregion Log Groups
 
   #region Lambda Invoke Permissions
-  CounterApiShowIncrementFunctionApiGatewayInvokePermission:
+  CounterApiIncrementFunctionApiGatewayInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt CounterApiShowIncrementFunction.Arn
+      FunctionName: !GetAtt CounterApiIncrementFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CounterApi}/*'
   #endregion Lambda Invoke Permissions
@@ -106,7 +106,7 @@ Resources:
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
-                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CounterApiShowIncrementFunction.Arn}/invocations'
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CounterApiIncrementFunction.Arn}/invocations'
                 passthroughBehavior: 'when_no_match'
 
   CounterApiKey:
