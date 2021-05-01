@@ -34,7 +34,7 @@ Resources:
     Properties:
       FunctionName: !Sub '${AWS::StackName}-show'
       Description: Busca o número de acessos ao site do Ton através da CountAPI
-      CodeUri: ../../packages/counter-api/show-fn
+      CodeUri: ../../packages/functions/counter-api/show-fn
       Handler: index.handler
       Timeout: 30
       MemorySize: 128
@@ -51,7 +51,7 @@ Resources:
     Properties:
       FunctionName: !Sub '${AWS::StackName}-increment'
       Description: Conta o número de acessos ao site do Ton através da CountAPI
-      CodeUri: ../../packages/counter-api/increment-fn
+      CodeUri: ../../packages/functions/counter-api/increment-fn
       Handler: index.handler
       Timeout: 30
       MemorySize: 128
