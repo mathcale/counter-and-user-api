@@ -21,6 +21,9 @@ Parameters:
 
 Globals:
   Function:
+    Layers:
+      - !Ref CounterApiLayer
+
     Environment:
       Variables:
         COUNTAPI_URL: https://api.countapi.xyz
@@ -28,6 +31,16 @@ Globals:
         COUNTAPI_NAMESPACE: !Ref CountApiNamespace
 
 Resources:
+  #region Lambda Layer
+  CounterApiLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub counter-api-layer-${AliasName}
+      ContentUri: ../../packages/layer
+      CompatibleRuntimes:
+        - nodejs14.x
+  #endregion Lambda Layer
+
   #region Functions
   CounterApiShowFunction:
     Type: AWS::Serverless::Function

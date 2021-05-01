@@ -1,0 +1,9 @@
+{
+  "name": "desafio-ton-stone-lambda-layer",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.21.1",
+    "desafio-ton-stone-lib": "^1.0.0"
+  }
+}

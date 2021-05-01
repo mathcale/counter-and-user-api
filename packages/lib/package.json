@@ -1,0 +1,12 @@
+{
+  "name": "desafio-ton-stone-lib",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.897.0"
+  }
+}
