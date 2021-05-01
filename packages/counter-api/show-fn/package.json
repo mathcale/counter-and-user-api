@@ -1,0 +1,9 @@
+{
+  "name": "counter-api-show-function",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.21.1"
+  }
+}
