@@ -1,10 +1,15 @@
-const { utils } = require('desafio-ton-stone-lib');
+const {
+  utils,
+  services: { UserService },
+} = require('desafio-ton-stone-lib');
 
 exports.handler = async (event) => {
-  const body = JSON.parse(event.body);
+  const newUser = JSON.parse(event.body);
 
   try {
-    return utils.buildHttpResonse(201, { Accept: 'application/json' }, body);
+    const response = await UserService.createUser(newUser);
+
+    return utils.buildHttpResonse(201, { Accept: 'application/json' }, response);
   } catch (err) {
     console.error(err);
 
