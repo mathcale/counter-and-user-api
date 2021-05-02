@@ -1,15 +1,16 @@
-const axios = require('axios').default;
-const { utils } = require('desafio-ton-stone-lib');
-const { COUNTAPI_URL, COUNTAPI_KEY, COUNTAPI_NAMESPACE } = process.env;
+const {
+  services: { CounterService },
+  utils,
+} = require('desafio-ton-stone-lib');
 
-exports.handler = async (event) => {
+exports.handler = async () => {
   console.info('Buscando contagem de acessos ao site do Ton...');
 
   try {
-    const response = await axios.get(`${COUNTAPI_URL}/get/${COUNTAPI_NAMESPACE}/${COUNTAPI_KEY}`);
-    console.info(`Valor atual do contador: ${response.data.value}`);
+    const currentCount = await CounterService.getCurrentCount();
+    console.info(`Valor atual do contador: ${currentCount}`);
 
-    return utils.buildHttpResonse(200, null, { value: response.data.value });
+    return utils.buildHttpResonse(200, null, { value: currentCount });
   } catch (err) {
     console.error(err);
 
