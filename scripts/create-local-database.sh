@@ -24,8 +24,20 @@ echo "[INFO] Creating \"users\" table..."
 
 aws dynamodb create-table \
   --table-name user-api-persistence-dev-users \
-  --attribute-definitions AttributeName=pk,AttributeType=S \
+  --attribute-definitions AttributeName=pk,AttributeType=S AttributeName=id,AttributeType=S \
   --key-schema AttributeName=pk,KeyType=HASH \
+  --global-secondary-indexes \
+    "[
+      {
+        \"IndexName\":\"userIdIndex\",
+        \"KeySchema\": [
+          {\"AttributeName\":\"id\",\"KeyType\":\"HASH\"}
+        ],
+        \"Projection\": {
+          \"ProjectionType\":\"ALL\"
+        }
+      }
+    ]" \
   --billing-mode PAY_PER_REQUEST \
   --endpoint-url http://localhost:8000 || die "Create table error"
 
