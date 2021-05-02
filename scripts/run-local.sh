@@ -21,6 +21,7 @@ echo "[INFO] Starting local API..."
 
 sam local start-api \
   -t infra/$PROJECT/template-$PROJECT-application.yaml \
-  --warm-containers LAZY
+  --warm-containers LAZY \
+  --docker-network lambda-local
 
 echo -e "\n[INFO] Interruption received"

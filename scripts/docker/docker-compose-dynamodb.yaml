@@ -1,0 +1,18 @@
+version: "3"
+
+volumes:
+  dynamodb_data:
+
+networks:
+  default:
+    external:
+      name: lambda-local
+
+services:
+  dynamodb:
+    image: amazon/dynamodb-local
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal
+    volumes:
+      - dynamodb_data:/home/dynamodblocal
+    ports:
+      - "8000:8000"
