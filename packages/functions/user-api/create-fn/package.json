@@ -1,0 +1,9 @@
+{
+  "name": "user-api-create-function",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "dependencies": {
+    "desafio-ton-stone-lib": "^1.0.0"
+  }
+}
