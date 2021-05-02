@@ -5,6 +5,9 @@ const { DynamoDB } = require('../infra');
 const { USERS_TABLE_NAME } = process.env;
 
 module.exports = {
+  getUserById: async (userId) => {
+    return await DynamoDB.queryIndex(USERS_TABLE_NAME, 'userIdIndex', userId);
+  },
   createUser: async (userData) => {
     try {
       const user = {
