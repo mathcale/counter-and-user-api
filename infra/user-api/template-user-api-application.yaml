@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Stack responsável pela API de usuários
+
+Parameters:
+  AliasName:
+    Type: String
+    Default: dev
+  UserApiGatewayKeyValue:
+    Type: String
+    Default: pD$sz`&L:M,XMB4GXC*yeYNZtck$~+V>
+  LogRetentionDays:
+    Type: Number
+    Default: 7
+
+Globals:
+  Function:
+    Layers:
+      - !Ref UserApiLayer
+
+    Environment:
+      Variables:
+        USERS_TABLE_NAME: ""
+
+Resources:
+  #region Lambda Layer
+  UserApiLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub user-api-layer-${AliasName}
+      ContentUri: ../../packages/layer
+      CompatibleRuntimes:
+        - nodejs14.x
+  #endregion Lambda Layer
+
+  #region Functions
+  UserApiCreateUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-create'
+      Description: Cria um novo usuário na base de dados
+      CodeUri: ../../packages/functions/user-api/create-fn
+      Handler: index.handler
+      Timeout: 30
+      MemorySize: 128
+      Runtime: nodejs14.x
+      AutoPublishAlias: !Ref AliasName
+      Tracing: Active
+      ReservedConcurrentExecutions: 1
+
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource: '*'
+  #endregion Functions
+
+  #region Log Groups
+  UserApiCreateUserFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: !Ref LogRetentionDays
+      LogGroupName: !Join ['', ['/aws/lambda/', !Ref UserApiCreateUserFunction]]
+  #endregion Log Groups
+
+  #region Lambda Invoke Permissions
+  UserApiCreateUserFunctionApiGatewayInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt UserApiCreateUserFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UserApi}/*'
+  #endregion Lambda Invoke Permissions
+
+  #region API Gateway
+  UserApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub '${AWS::StackName}-user-api'
+      StageName: !Ref AliasName
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
+
+      DefinitionBody:
+        swagger: 2.0
+        info:
+          title: !Sub '${AWS::StackName}'
+        schemes:
+          - https
+        x-amazon-apigateway-api-key-source: HEADER
+
+        x-amazon-apigateway-policy:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: 'Allow'
+              Principal: '*'
+              Action: 'execute-api:Invoke'
+              Resource: 'execute-api:/*'
+
+        securityDefinitions:
+          api_key:
+            type: 'apiKey'
+            name: 'x-api-key'
+            in: 'header'
+
+        paths:
+          /users:
+            post:
+              summary: Cria um novo usuário na base de dados
+              responses: {}
+              security:
+                - api_key: []
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UserApiCreateUserFunction.Arn}/invocations'
+                passthroughBehavior: 'when_no_match'
+
+  UserApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    DependsOn:
+      - UserApiStage
+    Properties:
+      Name: !Sub "${AWS::StackName}"
+      Description: !Sub "Chave de acesso à API ${AWS::StackName}"
+      Enabled: true
+      GenerateDistinctId: false
+      StageKeys:
+        - RestApiId: !Ref UserApi
+          StageName: !Sub "${AliasName}"
+      Value: !Ref UserApiGatewayKeyValue
+
+  UserApiUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    DependsOn:
+      - UserApiStage
+    Properties:
+      Description: !Sub "Usage plan para a API ${AWS::StackName}"
+      UsagePlanName: !Sub "${AWS::StackName}-usage-plan"
+      ApiStages:
+        - ApiId: !Ref UserApi
+          Stage: !Sub "${AliasName}"
+
+  UserApiUsagePlanKeyAssociation:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref UserApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref UserApiUsagePlan
+  #endregion API Gateway
