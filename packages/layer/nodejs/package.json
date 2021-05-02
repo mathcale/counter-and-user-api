@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "axios": "^0.21.1",
-    "desafio-ton-stone-lib": "^1.0.0"
+    "desafio-ton-stone-lib": "^1.0.0",
+    "joi-plus": "^1.3.0"
   }
 }
