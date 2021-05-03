@@ -33,6 +33,20 @@ Resources:
         - nodejs14.x
   #endregion Lambda Layer
 
+  #region Queues
+  UserApiShowFunctionDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${AWS::StackName}-show-function-dlq'
+      MessageRetentionPeriod: 1209600 # 14 dias
+
+  UserApiCreateUserFunctionDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${AWS::StackName}-create-function-dlq'
+      MessageRetentionPeriod: 1209600 # 14 dias
+  #endregion Queues
+
   #region Functions
   UserApiShowUserFunction:
     Type: AWS::Serverless::Function
@@ -47,6 +61,9 @@ Resources:
       AutoPublishAlias: !Ref AliasName
       Tracing: Active
       ReservedConcurrentExecutions: 1
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt UserApiShowFunctionDLQ.Arn
 
       Policies:
         - AWSLambdaBasicExecutionRole
@@ -54,8 +71,14 @@ Resources:
           Statement:
             - Effect: Allow
               Action:
-                - dynamodb:GetItem
+                - dynamodb:Query
               Resource: '*'
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt UserApiShowFunctionDLQ.Arn
 
   UserApiCreateUserFunction:
     Type: AWS::Serverless::Function
@@ -70,6 +93,9 @@ Resources:
       AutoPublishAlias: !Ref AliasName
       Tracing: Active
       ReservedConcurrentExecutions: 1
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt UserApiCreateUserFunctionDLQ.Arn
 
       Policies:
         - AWSLambdaBasicExecutionRole
@@ -79,6 +105,12 @@ Resources:
               Action:
                 - dynamodb:PutItem
               Resource: '*'
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt UserApiCreateUserFunctionDLQ.Arn
   #endregion Functions
 
   #region Log Groups

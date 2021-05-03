@@ -41,6 +41,20 @@ Resources:
         - nodejs14.x
   #endregion Lambda Layer
 
+  #region Queues
+  CounterApiShowFunctionDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${AWS::StackName}-show-function-dlq'
+      MessageRetentionPeriod: 1209600 # 14 dias
+
+  CounterApiIncrementFunctionDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${AWS::StackName}-increment-function-dlq'
+      MessageRetentionPeriod: 1209600 # 14 dias
+  #endregion Queues
+
   #region Functions
   CounterApiShowFunction:
     Type: AWS::Serverless::Function
@@ -55,9 +69,18 @@ Resources:
       AutoPublishAlias: !Ref AliasName
       Tracing: Active
       ReservedConcurrentExecutions: 1
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt CounterApiShowFunctionDLQ.Arn
 
       Policies:
         - AWSLambdaBasicExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt CounterApiIncrementFunctionDLQ.Arn
 
   CounterApiIncrementFunction:
     Type: AWS::Serverless::Function
@@ -72,9 +95,18 @@ Resources:
       AutoPublishAlias: !Ref AliasName
       Tracing: Active
       ReservedConcurrentExecutions: 1
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt CounterApiIncrementFunctionDLQ.Arn
 
       Policies:
         - AWSLambdaBasicExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt CounterApiIncrementFunctionDLQ.Arn
   #endregion Functions
 
   #region Log Groups
