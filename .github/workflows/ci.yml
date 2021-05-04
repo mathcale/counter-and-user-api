@@ -5,14 +5,18 @@ jobs:
   build:
     name: Test
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
     steps:
       - uses: actions/checkout@v2
-      - uses: borales/actions-yarn@v2.0.0
+      -
+        name: Using Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
         with:
-          cmd: install
-      - uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: build
-      - uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: test
+          node-version: ${{ matrix.node-version }}
+      - run: yarn install
+      - run: yarn build
+      - run: yarn test
