@@ -4,7 +4,7 @@ const {
 } = require('desafio-ton-stone-lib');
 
 exports.handler = async (event) => {
-  const userId = event.pathParameters.id;
+  const userId = event.pathParameters && event.pathParameters.id && event.pathParameters.id;
 
   if (!userId) {
     return utils.buildHttpResonse(400, null, { message: 'Missing "id" parameter' });
