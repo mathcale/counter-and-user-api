@@ -4,11 +4,11 @@ const {
 } = require('desafio-ton-stone-lib');
 
 exports.handler = async () => {
-  console.info('Incrementando contagem de acessos ao site do Ton...');
+  console.info('Incrementing website visits tracking counter...');
 
   try {
     const newValue = await CounterService.incrementCount();
-    console.info(`Contador incrementado com sucesso para ${newValue}!`);
+    console.info(`Counter successfully incremented to ${newValue}!`);
 
     return utils.buildHttpResonse(200, null, { newValue });
   } catch (err) {

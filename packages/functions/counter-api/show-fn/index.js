@@ -4,11 +4,11 @@ const {
 } = require('desafio-ton-stone-lib');
 
 exports.handler = async () => {
-  console.info('Buscando contagem de acessos ao site do Ton...');
+  console.info('Querying current counter value...');
 
   try {
     const currentCount = await CounterService.getCurrentCount();
-    console.info(`Valor atual do contador: ${currentCount}`);
+    console.info(`Current counter value: ${currentCount}`);
 
     return utils.buildHttpResonse(200, null, { value: currentCount });
   } catch (err) {
