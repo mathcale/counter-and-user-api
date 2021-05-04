@@ -1,6 +1,11 @@
 <!-- markdownlint-disable MD024 MD036 -->
 # Arquitetura
 
+| Nome        | URL                                                         | Ambiente |
+|-------------|-------------------------------------------------------------|----------|
+| Counter API | https://x7k0rd1ry1.execute-api.us-east-1.amazonaws.com/prod | prod     |
+| User API    | https://nw4sbtkw9k.execute-api.us-east-1.amazonaws.com/prod | prod     |
+
 ## Counter API
 
 ### Fluxo
@@ -10,6 +15,13 @@
 1. Ao receber uma requisição HTTP, o serviço API Gateway invoca o Lambda atrelado ao _path_ do request no método indicado;
 2. O lambda faz a comunicação com a CountAPI para buscar a quantidade de acessos registrados (endpoint `GET /count`) ou incrementar o número de acessos (endpoint `POST /count`);
 3. Em caso de erro, ele é logado no CloudWatch e enviado para sua respectiva DLQ;
+
+### Endpoints
+
+| Rota   | Verbo HTTP | Headers                                              |
+|--------|------------|------------------------------------------------------|
+| /count | GET        | `Accept: application/json`<br>`x-api-key: <API_KEY>` |
+| /count | POST       | `Accept: application/json`<br>`x-api-key: <API_KEY>` |
 
 ### Dicionário de dados
 
@@ -41,6 +53,13 @@ _Não se aplica_
 2. Em `GET /users/{id}`, o Lambda é responsável por buscar o usuário com o ID informado no banco de dados. Caso não encontrado, é retornado o status HTTP 404 e uma mensagem como JSON;
 3. Em `POST /users`, é realizado a validação e inserção do novo usuário no banco de dados. Em caso de erro de validação, é retornado uma lista de `errors` em formato JSON. Em outros casos de erro, é retornado um JSON com a mensagem no campo `message`;
 4. Em caso de erro, ele é logado no CloudWatch e enviado para sua respectiva DLQ;
+
+### Endpoints
+
+| Rota        | Verbo HTTP | Headers                                                                            |
+|-------------|------------|------------------------------------------------------------------------------------|
+| /users/{id} | GET        | `Accept: application/json`<br>`x-api-key: <API_KEY>`                                  |
+| /users      | POST       | `Content-Type: application/json`<br>`Accept: application/json`<br>`x-api-key: <API_KEY>` |
 
 ### Dicionário de dados
 
