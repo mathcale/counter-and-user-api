@@ -1,5 +1,11 @@
 name: CI
-on: [push]
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+    paths-ignore:
+      - '**.md'
 
 jobs:
   build:
