@@ -14,6 +14,8 @@ exports.handler = async () => {
   } catch (err) {
     console.error(err);
 
-    return utils.buildHttpResonse(500, null, { message: err.message });
+    return utils.buildHttpResonse(err.response ? err.response.status : 500, null, {
+      message: err.response ? err.response.data.error : err.message,
+    });
   }
 };
