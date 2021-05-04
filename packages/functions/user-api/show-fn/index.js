@@ -11,11 +11,15 @@ exports.handler = async (event) => {
   }
 
   try {
+    console.info(`Searching user with id = "${userId}}"...`);
     const result = await UserService.getUserById(userId);
 
     if (result.Count === 0) {
+      console.warn('User not found');
       return utils.buildHttpResonse(404, null, { message: 'User not found' });
     }
+
+    console.info(`User found!`);
 
     return utils.buildHttpResonse(200, { Accept: 'application/json' }, result.Items[0]);
   } catch (err) {
