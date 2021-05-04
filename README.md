@@ -3,6 +3,7 @@
   <h1 align="center">Counter & User API</h1>
   <p align="center">Stacks serverless para contagem de acessos ao site e cadastro de usuários</p>
   <p align="center">
+    <a href="https://github.com/mathcale/desafio-ton-stone/actions/workflows/ci.yml"><img src="https://github.com/mathcale/desafio-ton-stone/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
     <a href="https://insomnia.rest/run/?label=Desafio%20Ton%2FStone%20-%20Matheus%20Calegaro&uri=https%3A%2F%2Fraw.githubusercontent.com%2Fmathcale%2Fdesafio-ton-stone%2Fmain%2Fdocs%2Fcollections%2Finsomnia-requests-collection.json" target="_blank"><img src="https://insomnia.rest/images/run.svg" alt="Run in Insomnia"></a>
   </p>
 </p>
