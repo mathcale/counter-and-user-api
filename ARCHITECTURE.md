@@ -1,8 +1,6 @@
 <!-- markdownlint-disable MD024 MD036 -->
 # Arquitetura
 
-WIP
-
 ## Counter API
 
 ### Fluxo
