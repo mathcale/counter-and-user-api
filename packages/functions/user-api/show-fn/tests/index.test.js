@@ -29,7 +29,7 @@ const mockUser = {
   ],
 };
 
-describe('[User API] Get user data by ID endpoint test suite', () => {
+describe('[User API] "Get user data by ID" endpoint test suite', () => {
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
